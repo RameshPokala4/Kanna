@@ -1,0 +1,71 @@
+select * from car__s;
+
+-- Create table for cars data
+create table cars (
+    car_id int,
+    car_name text,
+    car_prices_in_lakh decimal,
+    kms_driven text,
+    fuel_type varchar(250),
+    transmission varchar(250),
+    ownership text,
+    engine int,
+    seats int,
+    manufacture text
+);
+
+-- average price of cars for each fuel type.
+select fuel_type, avg(car_prices_in_lakh) as avg_price
+from car__s
+group by 1;
+
+-- percentage distribution of cars based on transmission type.
+select transmission, count() * 100.0 / (select count() from car__s) as percentage
+from car__s
+group by transmission;
+
+-- top 5 car manufacturers with the highest average price of cars.
+select manufacture, avg(car_prices_in_lakh) as avg_price
+from car__s
+group by manufacture
+order by avg_price desc
+limit 5;
+
+-- total number of cars with engine size greater than 2000cc for each fuel type.
+select fuel_type, count(*) as total_count
+from car__s
+where engine > 2000
+group by fuel_type;
+
+-- correlation coefficient between car prices and kilometers driven.
+select corr(car_prices_in_lakh, cast(replace(kms_driven, ' km', '') as decimal)) as price_kms_correlation
+from car__s;
+
+-- average price of cars for each combination of transmission and fuel type.
+select transmission,fuel_type, avg(car_prices_in_lakh) as avg_price
+from car__s
+group by 1,2;
+
+-- ownership status with the highest average price of cars.
+select ownership, avg(car_prices_in_lakh) as avg_price
+from car__s
+group by ownership
+order by avg_price desc
+limit 10;
+
+-- median price of cars for each seat capacity.
+select seats, percentile_cont(0.5) within (order by car_prices_in_lakh) as median_price
+from car__s
+group by seats;
+
+-- percentage of cars with manual transmission for each fuel type.
+select fuel_type, sum(case when transmission = 'Manual' then 1 else 0 end) * 100.0 / count(*) as manual_percentage
+from car__s
+group by fuel_type;
+
+-- top 3 car models with the highest variability in prices (standard deviation).
+select car_name, STDDEV(car_prices_in_lakh) as price_std_dev
+from car__s
+group by car_name
+order by price_std_dev desc
+limit 3;
